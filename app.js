@@ -12,12 +12,40 @@ var server = http.createServer(function (request, response) {
   }
 });
 
-function testCommit(repo){
+function cloneRepo(repo){
   if(!repo){
     repo = process.env.TINYCI_DEFAULT_REPO;
   }
-  spawn('git clone '+repo);
+  var git = spawn('git',['clone', repo]);
+  git.stdout.on('data', function(code){
+    console.log(''+code);
+  });
+  git.stderr.on('data', function(code){
+    console.log(''+code);
+  });
+  git.on('exit', function(code){
+    if(code === 0){
+      startServer();
+    }
+  });
+}
+
+function startServer(){
+  startServerScript = process.env.START_SERVER_SCRIPT.split(' ');
+  var server = spawn(startServerScript.reverse().pop(),startServerScript.reverse());
+  server.stdout.on('data', function(code){
+    console.log(''+code);
+  });
+  server.stderr.on('data', function(code){
+    console.log(''+code);
+  });
+  server.on('exit', function(code){
+    if(code === 0){
+      console.err('Server shut down');
+    }
+  });
 
 }
+
 
 server.listen(3000);
