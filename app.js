@@ -1,11 +1,14 @@
 var http = require('http');
 var spawn = require('child_process').spawn;
 
+var SERVER_PORT = '3000';
+
 var server = http.createServer(function (request, response) {
   if(request.url.match(/ci/)){
     response.writeHead(200, {"Content-Type": "text/plain"});
     response.end("OK\n");
-    testCommit();
+    cloneRepo();
+    console.log('Started cloning repo');
   } else {
     response.writeHead(404, {"Content-Type": "text/plain"});
     response.end("Not found\n");
@@ -26,6 +29,7 @@ function cloneRepo(repo){
   git.on('exit', function(code){
     if(code === 0){
       startServer();
+      console.log('Repo copied, starting server');
     }
   });
 }
@@ -47,4 +51,5 @@ function startServer(){
 }
 
 
-server.listen(3000);
+server.listen(SERVER_PORT);
+console.log('Started CI server on port '+SERVER_PORT);
