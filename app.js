@@ -31,7 +31,7 @@ function cloneRepo(repo){
 }
 
 function startServer(){
-  startServerScript = process.env.START_SERVER_SCRIPT.split(' ');
+  var startServerScript = process.env.START_SERVER_SCRIPT.split(' ');
   var server = spawn(startServerScript.reverse().pop(),startServerScript.reverse());
   server.stdout.on('data', function(code){
     console.log(''+code);
@@ -44,7 +44,6 @@ function startServer(){
       console.err('Server shut down');
     }
   });
-
 }
 
 
