@@ -1,12 +1,14 @@
 var http = require('http');
 var spawn = require('child_process').spawn;
 
+var SERVER_PORT = '8777';
+
 var server = http.createServer(function (request, response) {
   if(request.url.match(/ci/)){
     response.writeHead(200, {"Content-Type": "text/plain"});
     response.end("OK\n");
-    console.log('Started cloning repo');
     cloneRepo();
+    console.log('Started cloning repo');
   } else {
     response.writeHead(404, {"Content-Type": "text/plain"});
     response.end("Not found\n");
@@ -27,6 +29,7 @@ function cloneRepo(repo){
   git.on('exit', function(code){
     if(code === 0){
       startServer();
+      console.log('Repo copied, starting server');
     }
   });
 }
@@ -63,9 +66,6 @@ function startTest(){
   });
 }
 
-
-server.listen(8777);
-console.log('CI server started at :8777');
 process.on('SIGINT', function() {
  console.log('SIGINT');
  var rm = spawn('rm',['-rf', '/tmp/tinyci']); 
@@ -73,3 +73,6 @@ process.on('SIGINT', function() {
   process.kill();
  });
 });
+
+server.listen(SERVER_PORT);
+console.log('CI server started at '+SERVER_PORT);
