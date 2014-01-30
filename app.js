@@ -5,7 +5,8 @@ var server = http.createServer(function (request, response) {
   if(request.url.match(/ci/)){
     response.writeHead(200, {"Content-Type": "text/plain"});
     response.end("OK\n");
-    testCommit();
+    console.log('Started cloning repo');
+    cloneRepo();
   } else {
     response.writeHead(404, {"Content-Type": "text/plain"});
     response.end("Not found\n");
@@ -16,7 +17,7 @@ function cloneRepo(repo){
   if(!repo){
     repo = process.env.TINYCI_DEFAULT_REPO;
   }
-  var git = spawn('git',['clone', repo]);
+  var git = spawn('git',['clone', repo, '/tmp/test']);
   git.stdout.on('data', function(code){
     console.log(''+code);
   });
@@ -31,7 +32,7 @@ function cloneRepo(repo){
 }
 
 function startServer(){
-  var startServerScript = process.env.START_SERVER_SCRIPT.split(' ');
+  var startServerScript = process.env.TINYCI_START_SERVER.split(' ');
   var server = spawn(startServerScript.reverse().pop(),startServerScript.reverse());
   server.stdout.on('data', function(code){
     console.log(''+code);
@@ -46,5 +47,29 @@ function startServer(){
   });
 }
 
+function startTest(){
+  var startTestScript = process.env.TINYCI_START_TEST.split(' ');
+  var server = spawn(startTestScript.reverse().pop(),startTestScript.reverse());
+  server.stdout.on('data', function(code){
+    console.log(''+code);
+  });
+  server.stderr.on('data', function(code){
+    console.log(''+code);
+  });
+  server.on('exit', function(code){
+    if(code === 0){
+      console.err('Server shut down');
+    }
+  });
+}
 
-server.listen(3000);
+
+server.listen(8777);
+console.log('CI server started at :8777');
+process.on('SIGINT', function() {
+ console.log('SIGINT');
+ var rm = spawn('rm',['-rf', '/tmp/tinyci']); 
+ rm.on('exit', function(){
+  process.kill();
+ });
+});
